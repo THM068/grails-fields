@@ -247,6 +247,24 @@ class FormFieldsTagLibSpec extends Specification {
 		applyTemplate('<f:field bean="personInstance" property="name"/>', [personInstance: personInstance]) == '<input type="text" name="name" value="Bart Simpson" required="" id="name" />'
 	}
 
+    @Issue('https://github.com/robfletcher/grails-fields/pull/16')
+    void 'tag body can be used instead of the input'() {
+        given:
+        views['/fields/default/_field.gsp'] = '${widget}'
+
+        expect:
+        applyTemplate('<f:field bean="personInstance" property="name">BODY</f:field>', [personInstance: personInstance]) == 'BODY'
+    }
+
+    @Issue('https://github.com/robfletcher/grails-fields/pull/16')
+    void 'the model is passed to a tag body if there is one'() {
+        given:
+        views['/fields/default/_field.gsp'] = '${widget}'
+
+        expect:
+        applyTemplate('<f:field bean="personInstance" property="name">bean: ${bean.getClass().simpleName}, property: ${property}, type: ${type.simpleName}, label: ${label}, value: ${value}</f:field>', [personInstance: personInstance]) == 'bean: Person, property: name, type: String, label: Name, value: Bart Simpson'
+    }
+
 	void "all tag renders fields for all properties"() {
 		given:
 		views["/fields/default/_field.gsp"] = '${property} '

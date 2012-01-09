@@ -14,10 +14,6 @@
  * limitations under the License.
  */
 
-
-
-
-
 package grails.plugin.formfields
 
 import grails.util.GrailsNameUtils
@@ -27,6 +23,7 @@ import org.codehaus.groovy.grails.scaffolding.DomainClassPropertyComparator
 import static FormFieldsTemplateService.toPropertyNameFormat
 import org.codehaus.groovy.grails.commons.*
 import static org.codehaus.groovy.grails.commons.GrailsClassUtils.getStaticPropertyValue
+import org.codehaus.groovy.grails.web.pages.GroovyPage
 
 class FormFieldsTagLib implements GrailsApplicationAware {
 
@@ -73,14 +70,18 @@ class FormFieldsTagLib implements GrailsApplicationAware {
 		}
 	}
 
-	Closure field = { attrs ->
+	Closure field = { attrs, body ->
 		if (!attrs.property) throwTagError("Tag [field] is missing required attribute [property]")
 		def templateName = attrs.template ?: 'field'
 
 		def propertyAccessor = resolveProperty(attrs)
 		def model = buildModel(propertyAccessor, attrs)
 
-		model.widget = renderWidget('input', propertyAccessor, model)
+        if (body.is(GroovyPage.EMPTY_BODY_CLOSURE)) {
+            model.widget = renderWidget('input', propertyAccessor, model)
+        } else {
+            model.widget = body(model)
+        }
 
 		def template = formFieldsTemplateService.findTemplate(propertyAccessor, templateName)
 		out << render(template: template.path, plugin: template.plugin, model: model)
